@@ -28,7 +28,10 @@ function closeAudioPlayer() {
 // Function to play audio
 function playAudio(button) {
   const audioSrc = button.getAttribute("data-audio");
-  const trackTitle = button.closest(".group").querySelector("h3").textContent;
+  const card = button.closest(".group");
+  // Try to find h3 first (for audio talks), then fall back to span (for Don't Forget the Star)
+  const titleElement = card.querySelector("h3") || card.querySelector("span.text-sm.font-medium");
+  const trackTitle = titleElement ? titleElement.textContent : "Audio Track";
 
   // Close any existing player
   closeAudioPlayer();
