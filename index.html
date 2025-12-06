@@ -1863,7 +1863,7 @@
         });
       });
 
-      // Make PDF cards clickable
+      // Make PDF cards clickable - open in new tab
       document.querySelectorAll(".pdf-card").forEach((card) => {
         card.addEventListener("click", function (e) {
           // Don't trigger if clicking directly on the download link
@@ -1872,7 +1872,9 @@
           }
           const downloadLink = card.querySelector("a[download]");
           if (downloadLink) {
-            downloadLink.click();
+            // Open PDF in new tab instead of downloading
+            const pdfUrl = downloadLink.getAttribute("href");
+            window.open(pdfUrl, "_blank");
           }
         });
       });
