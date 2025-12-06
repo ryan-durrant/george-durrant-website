@@ -1787,7 +1787,7 @@
           <h4 id="currentTrack" class="text-lg font-medium text-gray-800 mb-4">
             Track Title
           </h4>
-          <audio id="audioElement" controls class="w-full">
+          <audio id="audioElement" controls class="w-full" preload="metadata">
             Your browser does not support the audio element.
           </audio>
         </div>
@@ -1845,12 +1845,23 @@
 
         // Update player content
         document.getElementById("currentTrack").textContent = trackTitle;
-        document.getElementById("audioElement").src = audioSrc;
 
-        // Show player
+        // Show player first
         const player = document.getElementById("audioPlayer");
         player.classList.remove("hidden");
         player.classList.add("flex");
+
+        // Get audio element and set source
+        const audio = document.getElementById("audioElement");
+
+        // Remove old event listeners by removing and re-adding
+        const newAudio = audio.cloneNode(true);
+        audio.parentNode.replaceChild(newAudio, audio);
+        const audioElement = document.getElementById("audioElement");
+
+        // Set source and load
+        audioElement.src = audioSrc;
+        audioElement.load(); // Force reload
 
         // Update button to show playing state
         button.innerHTML = `
@@ -1860,14 +1871,16 @@
                     Playing...
                 `;
 
-        // Auto-play when loaded
-        const audio = document.getElementById("audioElement");
-        audio.addEventListener("loadeddata", function () {
-          audio.play();
+        // Auto-play when metadata is loaded
+        audioElement.addEventListener("loadedmetadata", function () {
+          audioElement.play().catch(function (error) {
+            console.log("Autoplay prevented:", error);
+            // User interaction required - that's okay, they can click play
+          });
         });
 
         // Reset button when audio ends
-        audio.addEventListener("ended", function () {
+        audioElement.addEventListener("ended", function () {
           if (currentButton) {
             currentButton.innerHTML = `
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1877,6 +1890,11 @@
                         `;
             currentButton = null;
           }
+        });
+
+        // Error handling
+        audioElement.addEventListener("error", function (e) {
+          console.error("Audio error:", e, "Source:", audioSrc);
         });
       }
 
