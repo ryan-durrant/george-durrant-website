@@ -145,8 +145,32 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Make video cards clickable
+  // Make video cards clickable (support both click and touch for mobile)
   document.querySelectorAll(".video-card").forEach((card) => {
+    let touchStartTime = 0;
+    
+    // Handle touch events for mobile
+    card.addEventListener("touchstart", function (e) {
+      touchStartTime = Date.now();
+    }, { passive: true });
+    
+    card.addEventListener("touchend", function (e) {
+      const touchDuration = Date.now() - touchStartTime;
+      // Only trigger if it was a quick tap (not a swipe)
+      if (touchDuration < 300) {
+        e.preventDefault();
+        // Don't trigger if touching directly on the button
+        if (e.target.closest("button")) {
+          return;
+        }
+        const playButton = card.querySelector(".play-video-btn");
+        if (playButton) {
+          playVideo(playButton);
+        }
+      }
+    });
+    
+    // Handle click events for desktop
     card.addEventListener("click", function (e) {
       // Don't trigger if clicking directly on the button
       if (e.target.closest("button")) {
@@ -159,12 +183,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Close video modal when clicking on backdrop
+  // Close video modal when clicking/touching on backdrop
   const videoPlayer = document.getElementById("videoPlayer");
   if (videoPlayer) {
+    // Handle click events
     videoPlayer.addEventListener("click", function (e) {
       // Only close if clicking directly on the backdrop, not the modal content
       if (e.target === videoPlayer) {
+        closeVideoPlayer();
+      }
+    });
+    
+    // Handle touch events for mobile
+    videoPlayer.addEventListener("touchend", function (e) {
+      // Only close if touching directly on the backdrop, not the modal content
+      if (e.target === videoPlayer) {
+        e.preventDefault();
         closeVideoPlayer();
       }
     });
@@ -201,8 +235,8 @@ function playVideo(button) {
   // Update player content
   document.getElementById("currentVideoTitle").textContent = videoTitle;
 
-  // Build YouTube embed URL
-  let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  // Build YouTube embed URL with mobile-friendly parameters
+  let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1`;
   if (videoStart && videoStart !== "0") {
     embedUrl += `&start=${videoStart}`;
   }
@@ -214,6 +248,9 @@ function playVideo(button) {
 
   // Set video source
   const video = document.getElementById("videoElement");
-  video.src = embedUrl;
+  // Small delay to ensure modal is visible before loading video (helps with mobile Safari)
+  setTimeout(function() {
+    video.src = embedUrl;
+  }, 100);
 }
 
