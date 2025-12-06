@@ -1,5 +1,6 @@
 let currentAudio = null;
 let currentButton = null;
+let currentAudioSrc = null;
 
 function closeAudioPlayer() {
   const player = document.getElementById("audioPlayer");
@@ -38,9 +39,19 @@ function playAudio(button) {
 
   // Update current button reference
   currentButton = button;
+  currentAudioSrc = audioSrc; // Store audio source for download
 
   // Update player content
   document.getElementById("currentTrack").textContent = trackTitle;
+  
+  // Update download button
+  const downloadLink = document.getElementById("audioDownloadLink");
+  if (downloadLink) {
+    downloadLink.href = audioSrc;
+    // Extract filename from path for download attribute
+    const filename = audioSrc.split('/').pop();
+    downloadLink.download = filename;
+  }
 
   // Show player first
   const player = document.getElementById("audioPlayer");
