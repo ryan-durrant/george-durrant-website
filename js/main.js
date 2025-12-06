@@ -134,8 +134,75 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // Make video cards clickable
+  document.querySelectorAll(".video-card").forEach((card) => {
+    card.addEventListener("click", function (e) {
+      // Don't trigger if clicking directly on the button
+      if (e.target.closest("button")) {
+        return;
+      }
+      const playButton = card.querySelector(".play-video-btn");
+      if (playButton) {
+        playVideo(playButton);
+      }
+    });
+  });
+
+  // Close video modal when clicking on backdrop
+  const videoPlayer = document.getElementById("videoPlayer");
+  if (videoPlayer) {
+    videoPlayer.addEventListener("click", function (e) {
+      // Only close if clicking directly on the backdrop, not the modal content
+      if (e.target === videoPlayer) {
+        closeVideoPlayer();
+      }
+    });
+  }
+
   // Update copyright year automatically
   document.getElementById("currentYear").textContent =
     new Date().getFullYear();
 });
+
+// Video Player Functions
+function closeVideoPlayer() {
+  const player = document.getElementById("videoPlayer");
+  const video = document.getElementById("videoElement");
+
+  player.classList.add("hidden");
+  player.classList.remove("flex");
+
+  if (video) {
+    // Stop the video by clearing the src
+    video.src = "";
+  }
+}
+
+function playVideo(button) {
+  const videoId = button.getAttribute("data-video-id");
+  const videoTitle = button.getAttribute("data-video-title") || "Video";
+  const videoStart = button.getAttribute("data-video-start") || "0";
+
+  // Close any existing players
+  closeAudioPlayer();
+  closeVideoPlayer();
+
+  // Update player content
+  document.getElementById("currentVideoTitle").textContent = videoTitle;
+
+  // Build YouTube embed URL
+  let embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  if (videoStart && videoStart !== "0") {
+    embedUrl += `&start=${videoStart}`;
+  }
+
+  // Show player
+  const player = document.getElementById("videoPlayer");
+  player.classList.remove("hidden");
+  player.classList.add("flex");
+
+  // Set video source
+  const video = document.getElementById("videoElement");
+  video.src = embedUrl;
+}
 
